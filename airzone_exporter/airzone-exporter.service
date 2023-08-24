@@ -1,0 +1,11 @@
+[Unit]
+Description=AirZone Service
+After=network.target
+
+[Service]
+Environment=PYTHONUNBUFFERED=1
+Type=notify
+ExecStart=/usr/local/bin/az-exporter
+
+[Install]
+WantedBy=multi-user.target
