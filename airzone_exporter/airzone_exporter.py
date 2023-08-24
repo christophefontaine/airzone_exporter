@@ -9,32 +9,6 @@ from wsgiref.simple_server import make_server
 
 
 class AirZoneCollector(object):
-    def collect(self):
-        mode = GaugeMetricFamily('az_mode', "System mode", None, {"room"})
-        on = GaugeMetricFamily('az_on', "System running", None, {"room"})
-        t = GaugeMetricFamily('az_temperature',
-                              'Temperature in Celcius degrees',
-                              None, {"room"})
-        h = GaugeMetricFamily('az_humidity',
-                              'Relative percentage of humidity',
-                              None, {"room"})
-
-        r = requests.post("http://" + self.airzonewebserver + "/api/v1/hvac",
-                          None, {"systemID": 1, "zoneID": 0})
-        if r.status_code == 200:
-            for zone in r.json()['data']:
-                on.add_metric([zone["name"]], bool(zone["on"]))
-                t.add_metric([zone["name"]], round(zone["roomTemp"], 1))
-                h.add_metric([zone["name"]], zone["humidity"])
-                mode.add_metric([zone["name"]], zone["mode"])
-
-        yield mode
-        yield on
-        yield t
-        yield h
-
-
-class AirZoneCollectorV2(object):
     EXCLUDES = ["name", "errors", "modes", "eco_adapt", "units"]
     HELP_STR = {
             "mode": "System Mode",
@@ -74,7 +48,7 @@ def main():
                     help="Webserver URI, for example \"airzone.local:3000\"",
                     default="airzone.local:3000")
     args = ap.parse_args()
-    azc = AirZoneCollectorV2()
+    azc = AirZoneCollector()
     azc.airzonewebserver = args.uri
     REGISTRY.register(azc)
 
